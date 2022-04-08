@@ -306,11 +306,11 @@ fi
 	done
 
 
-#Create the fasta file of the barcodes
+#Create the fasta file of the barcodes. I removed "^" 
 
 	Barcodes_file="$OUTPUT_DIR"/barcodes.fasta
 	for (( i=0; i < "${#ID2S[@]}"; i++ )); do
-	  printf ">%s\n^NNN%s\n" \
+	  printf ">%s\n%s\n" \
 		"${ID2S[i]}" "${ID2S[i]}" >> "${Barcodes_file}"
 	done
 
@@ -372,9 +372,10 @@ fi
 		i_count=$((i_count+1))
  #The barcode detected on the .1 is written in the name, so we now look
  #for that barcode at the beggining of the .2 read
+ # I changed the barcode length from 6 to 8
 
 		RIGHT_BARCODE=$(echo ${file} | awk '/_round1/ {
-	    match($0, /_round1/); print substr($0, RSTART - 6, 6);
+	    match($0, /_round1/); print substr($0, RSTART - 8, 8);
 	    }')
 
 			short_file=$(basename "${file}")
@@ -413,8 +414,10 @@ fi
 	  #echo "this is the right barcode"
 	  #echo ${RIGHT_BARCODE}
 
+
 # try to make cutadapt quieter
-	  cutadapt -g ^NNN"${RIGHT_BARCODE}" -o "${MID_OUTPUT2}" \
+# I removed ^NNN
+	  cutadapt -g "${RIGHT_BARCODE}" -o "${MID_OUTPUT2}" \
 	  -p "${MID_OUTPUT1}" "${file}" "${r1file}" --quiet --discard-untrimmed 2>> "${LOGFILE}"
 
 	  nseq_s2r1file=$(cat "${MID_OUTPUT1}" |  wc -l)
@@ -424,6 +427,8 @@ fi
 	  #echo "and it has ${nseq_s2r1file} reads after trimming"
 	  #echo "Hopefully the same number of lines as the mid R2 ${nseq_s2r2file}"
 
+
+#I don´t need to remove the primers 
 
 	# Now remove the pcr primers
 	# This is an important point for libraries prepared by ligation:
@@ -513,6 +518,9 @@ else #In case you already demultiplexed your samples, then cp the files you need
 	DEMULT_DIR="${DEMULT_OUTPUT}"/demultiplexed
 
 fi #This finishes the control flow in case you already demultiplexed
+
+#I will not use this part of the script for now
+
 # We are selecting a pair of fastq files so we can check the direction of the
 # ASVs
 FILE1=($(awk -F',' -v COLNUM=$COLNUM_FILE1 \
